@@ -115,3 +115,4 @@ D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.pdb
 D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.Migrations.InitialCreate.resources
 D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.csproj.GenerateResource.cache
 D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.Migrations.InitialCreate1.resources
+D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.Migrations.UpdateToDoModel.resources

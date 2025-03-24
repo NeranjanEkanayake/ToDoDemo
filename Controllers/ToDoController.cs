@@ -24,6 +24,7 @@ namespace ToDoApp.Controllers
         }
 
         [HttpPost]
+        [Route("ToDo/Edit/{id}")]
         public JsonResult Edit(int id, ToDoModel updatedToDo)
         {
             var todo = db.ToDos.Find(id);
@@ -37,7 +38,8 @@ namespace ToDoApp.Controllers
             return Json(new { success = false });
         }
 
-        [HttpDelete]
+        [HttpPost]
+        [Route("ToDo/Delete/{id}")]
         public JsonResult Delete(int id)
         {
             var todo = db.ToDos.Find(id);

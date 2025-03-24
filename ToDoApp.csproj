@@ -187,6 +187,10 @@
     <Compile Include="Migrations\202503240433352_InitialCreate1.Designer.cs">
       <DependentUpon>202503240433352_InitialCreate1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202503240603549_UpdateToDoModel.cs" />
+    <Compile Include="Migrations\202503240603549_UpdateToDoModel.Designer.cs">
+      <DependentUpon>202503240603549_UpdateToDoModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ApplicationDbContext.cs" />
     <Compile Include="Models\ToDoModel.cs" />
@@ -283,6 +287,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202503240433352_InitialCreate1.resx">
       <DependentUpon>202503240433352_InitialCreate1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202503240603549_UpdateToDoModel.resx">
+      <DependentUpon>202503240603549_UpdateToDoModel.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
