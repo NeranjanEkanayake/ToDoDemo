@@ -12,56 +12,83 @@ namespace ToDoApp.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         [HttpPost]
-        public JsonResult Create(ToDoModel todo)
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(ToDoModel todo)
         {
             if (ModelState.IsValid)
             {
                 db.ToDos.Add(todo);
                 db.SaveChanges();
-                return Json(new { success = true });
+                TempData["SuccessMessage"] = "To Do added successfully";
+                return RedirectToAction("Index");
             }
-            return Json(new { success = false });
+            TempData["ErrorMessage"] = "Failed to create the To Do";
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("ToDo/Edit/{id}")]
-        public JsonResult Edit(int id, ToDoModel updatedToDo)
+        public ActionResult Edit(ToDoModel todo)
         {
-            var todo = db.ToDos.Find(id);
-            if (todo != null)
+            if (ModelState.IsValid)
             {
-                todo.Title = updatedToDo.Title;
-                todo.Description = updatedToDo.Description;
-                db.SaveChanges();
-                return Json(new { success = true });
+                var existingTodo = db.ToDos.Find(todo.Id);
+                if (existingTodo != null)
+                {
+                    existingTodo.Title = todo.Title;
+                    existingTodo.Description = todo.Description;
+                    existingTodo.EditedDate = DateTime.Now;
+                    existingTodo.EditedBy = todo.EditedBy;
+                    db.SaveChanges();
+                    TempData["SuccessMessage"] = "Edit To Do done";
+                }
             }
-            return Json(new { success = false });
+            TempData["ErrorMessage"] = "Data table error";
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Route("ToDo/Delete/{id}")]
-        public JsonResult Delete(int id)
+        public ActionResult Delete(int id)
         {
             var todo = db.ToDos.Find(id);
             if (todo != null)
             {
                 db.ToDos.Remove(todo);
                 db.SaveChanges();
-                return Json(new { success = true });
+                TempData["SuccessMessage"] = "Deleted todo Successfully";
+                return RedirectToAction("Index");
+            }else
+            {
+                TempData["ErrorMessage"] = "Error deleting todo";
             }
-            return Json(new { success = false });
+                return RedirectToAction("Index");
         }
-
 
 
 
         //// GET: ToDo
-        public ActionResult Index()
+        //public ActionResult Index()
+        //{
+        //    var todos = db.ToDos.ToList();
+        //    return View(todos);
+        //}
+
+        public ActionResult Index(string searchQuery)
         {
-            var todos = db.ToDos.ToList();
-            return View(todos);
+            var todos=db.ToDos.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                todos=todos.Where(t => t.Title.Contains(searchQuery));
+            }
+            ViewBag.SearchQuery = searchQuery;
+            return View(todos.ToList());
         }
 
+       
         //// GET: ToDo/Details/5
         //public ActionResult Details(int id)
         //{

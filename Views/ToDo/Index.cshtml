@@ -1,19 +1,67 @@
-﻿
-@{
-    ViewBag.Title = "Index";
-}
-@model IEnumerable<ToDoApp.Models.ToDoModel>
+﻿@model IEnumerable<ToDoApp.Models.ToDoModel>
 
 <div class="container">
+
+    <form method="get" action="@Url.Action("Index", "ToDo")" class="mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <div class="form-outline" data-mdb-input-init>
+                        <input type="search" name="searchQuery" id="form1" class="form-control" placeholder="Search For To Do" value="@ViewBag.SearchQuery" />
+                    </div>
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary" data-mdb-ripple-init>Search</button>
+                        <a href="@Url.Action("Index", "ToDo")" class="btn btn-secondary ml-2">Clear</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    @if (!string.IsNullOrEmpty(ViewBag.SearchQuery))
+    {
+        if (Model.Any())
+        {
+            <div class="row">
+                @foreach (var toDo in Model)
+                {
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">@toDo.Title</h5>
+                                <p class="card-text">@toDo.Description</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+    }
+    else
+    {
+        <p class="text-muted">No matching results</p>
+    }
+
+
     <div class="row">
         <!--Add new todos-->
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Add new todo</h5>
-                    <input type="text" id="newTitle" class="form-control mb-2" placeholder="Title" />
-                    <textarea id="newDescription" class="form-control mb-2" placeholder="Description"></textarea>
-                    <button class="btn btn-primary" onclick="addTodo()">Add</button>
+                    @using (Html.BeginForm("Create", "ToDo", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.FirstOrDefault().Title)
+                            @Html.TextBox("Title", null, new { @class = "form-control", placeholder = "Title", required = "required" })
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.FirstOrDefault().Description)
+                            @Html.TextArea("Description", null, new { @class = "form-control", placeholder = "Description" })
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    }
                 </div>
             </div>
         </div>
@@ -27,25 +75,53 @@
                         <div id="viewMode-@todo.Id">
                             <h5 class="card-title">@todo.Title</h5>
                             <p class="card-text">@todo.Description</p>
-                            <p class="card-text">@todo.CreatedBy</p>
-                            <p class="card-text">@todo.CreatedDate</p>
-                            <button class="btn btn-warning btn-sm" onclick="toggleEditMode(@todo.Id)">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteToDo(@todo.Id)">Delete</button>
-                            <span class="badge @(todo.Status ? "bg-success" : "bg-warning")">
-                                @(todo.Status ? "Completed":"Pending")
-                            </span>
+                            <p class="card-text">Created By: @todo.CreatedBy</p>
+                            <p class="card-text">Created At: @todo.CreatedDate</p>
+                            <p class="card-text">Edited By: @todo.EditedBy</p>
+                            <p class="card-text">Edited At: @todo.EditedDate</p>
+                            @using (Html.BeginForm("Edit", "ToDo", FormMethod.Post, new
+                            {
+                                id = "editForm-" + todo.Id
+                            }))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.HiddenFor(m => todo.Id)
+                                <button class="btn btn-warning btn-sm" type="button" onclick="toggleEdit(@todo.Id)">Edit</button>
+                            }
+
+                            @using (Html.BeginForm("Delete", "ToDo", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", todo.Id)
+                                <button class="btn btn-danger btn-sm" onclick="return confirm('Delete To Do?');">Delete</button>
+                            }
                         </div>
+
                         <!--Editing todos-->
                         <div id="editMode-@todo.Id" style="display:none;">
-                            <input type="text" id="editTitle-@todo.Id" class="form-control mb-2" value="@todo.Title" />
-                            <textarea id="editDescription-@todo.Id" class="form-control mb-2">@todo.Description</textarea>
-                            <button class="btn btn-success btn-sm" onclick="saveToDo(@todo.Id)">Save</button>
-                            <button class="btn btn-secondary btn-sm" onclick="cancelEdit(@todo.Id)">Cancel</button>
-                            <p class="card-text">@todo.CreatedBy</p>
-                            <p class="card-text">@todo.CreatedDate</p>
-                            <span class="badge @(todo.Status ? "bg-success" : "bg-warning")">
-                                @(todo.Status ? "Completed":"Pending")
-                            </span>
+
+                            @using (Html.BeginForm("Edit", "ToDo", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.HiddenFor(m => todo.Id)
+
+                                <div class="form-group">
+                                    @Html.Label("Title")
+                                    @Html.TextBoxFor(m => todo.Title, new { @class = "form-control", required = "required" })
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.Label("Description")
+                                    @Html.TextAreaFor(m => todo.Description, new { @class = "form-control", required = "required" })
+                                </div>
+
+                                <button class="btn btn-success btn-sm" type="submit">Save</button>
+                                <button class="btn btn-secondary btn-sm" type="button" onclick="toggleView(@todo.Id)">Cancel</button>
+                                <p class="card-text">Created By: @todo.CreatedBy</p>
+                                <p class="card-text">Created At: @todo.CreatedDate</p>
+                                <p class="card-text">Edited By: @todo.EditedBy</p>
+                                <p class="card-text">Edited At: @todo.EditedDate</p>
+                            }
                         </div>
                     </div>
                 </div>
@@ -54,12 +130,12 @@
     </div>
 </div>
 <script>
-    function toggleEditMode(id) {
+    function toggleEdit(id) {
         document.getElementById("viewMode-" + id).style.display = "none";
         document.getElementById("editMode-" + id).style.display = "block";
     }
 
-    function cancelEdit(id) {
+    function toggleView(id) {
         document.getElementById("viewMode-" + id).style.display = "block";
         document.getElementById("editMode-" + id).style.display = "none";
     }
@@ -122,4 +198,3 @@
     }
 
 </script>
-
