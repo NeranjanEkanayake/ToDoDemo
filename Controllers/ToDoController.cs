@@ -11,6 +11,18 @@ namespace ToDoApp.Controllers
     {
         private ApplicationDbContext db = new ApplicationDbContext();
 
+        public ActionResult Index(string searchQuery)
+        {
+            var todos = db.ToDos.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                todos = todos.Where(t => t.Title.Contains(searchQuery));
+            }
+            ViewBag.SearchQuery = searchQuery;
+            return View(todos.ToList());
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(ToDoModel todo)
@@ -76,17 +88,7 @@ namespace ToDoApp.Controllers
         //    return View(todos);
         //}
 
-        public ActionResult Index(string searchQuery)
-        {
-            var todos=db.ToDos.AsQueryable();
-
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
-                todos=todos.Where(t => t.Title.Contains(searchQuery));
-            }
-            ViewBag.SearchQuery = searchQuery;
-            return View(todos.ToList());
-        }
+       
 
        
         //// GET: ToDo/Details/5

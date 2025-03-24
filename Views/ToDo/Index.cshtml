@@ -1,4 +1,5 @@
-﻿@model IEnumerable<ToDoApp.Models.ToDoModel>
+﻿
+@model IEnumerable<ToDoApp.Models.ToDoModel>
 
 <div class="container">
 
@@ -79,6 +80,7 @@
                             <p class="card-text">Created At: @todo.CreatedDate</p>
                             <p class="card-text">Edited By: @todo.EditedBy</p>
                             <p class="card-text">Edited At: @todo.EditedDate</p>
+
                             @using (Html.BeginForm("Edit", "ToDo", FormMethod.Post, new
                             {
                                 id = "editForm-" + todo.Id
@@ -139,62 +141,4 @@
         document.getElementById("viewMode-" + id).style.display = "block";
         document.getElementById("editMode-" + id).style.display = "none";
     }
-
-    function addTodo() {
-        var title = document.getElementById("newTitle").value;
-        var description = document.getElementById("newDescription").value;
-        try {
-            fetch('/Todo/Create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ Title: title, Description: description })
-            }).then(respone => response.json())
-                .then(data => location.reload())
-                .catch(error => console.error('Error message:', error));
-        } catch (err) {
-            console.error('Error', err);
-        }
-
-        console.log("ToDo added: ", title, description);
-
-        document.getElementById("newTitle").value = "";
-        document.getElementById("newDescription").value = "";
-
-    }
-
-
-    function saveToDo(id) {
-        var title = document.getElementById("editTitle-" + id).value;
-        var description = document.getElementById("editDescription-" + id).value;
-
-        fetch('/ToDo/Edit/' + id, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ _method: 'PUT', Id: id, Title: title, Description: description })
-        })
-            .then(respone => response.json())
-            .then(data => {
-                if (data.success) location.reload();
-                else alert('Failed to Update To DO');
-            })
-            .catch(error => console.error('Error:', error));
-        console.log("Edited todo: ", title, description);
-    }
-
-    function deleteToDo(id) {
-        if (confirm("Are you sure you want to delete this ToDo?")) {
-            fetch('/ToDo/Delete/' + id, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ _method: 'DELETE' })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) location.reload();
-                    else alert('Failed to Delete ToDo.');
-                })
-                .catch(error => console.error('Error:', error));
-        }
-    }
-
 </script>
