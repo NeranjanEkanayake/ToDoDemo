@@ -116,3 +116,8 @@ D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.Migrations.InitialCreate.resources
 D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.csproj.GenerateResource.cache
 D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.Migrations.InitialCreate1.resources
 D:\C# demo\ToDoApp\ToDoApp\obj\Debug\ToDoApp.Migrations.UpdateToDoModel.resources
+D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Abstractions.dll
+D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Container.dll
+D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Mvc5.dll
+D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Abstractions.pdb
+D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Container.pdb

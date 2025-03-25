@@ -1,26 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Web;
+using System.Web.Management;
 using System.Web.Mvc;
 using ToDoApp.Models;
+using ToDoApp.Services;
 
 namespace ToDoApp.Controllers
 {
     public class ToDoController : Controller
     {
-        private ApplicationDbContext db = new ApplicationDbContext();
+        public readonly ToDoService toDoService;
 
-        public ActionResult Index(string searchQuery)
+        public ToDoController(ToDoService _toDoService)
         {
-            var todos = db.ToDos.AsQueryable();
+            toDoService = _toDoService;
+        }
 
-            if (!string.IsNullOrEmpty(searchQuery))
+
+        //public ActionResult Index(string searchQuery)
+        //{
+        //    var todos = toDoService.GetByName(searchQuery);
+
+        //    if (!string.IsNullOrEmpty(searchQuery))
+        //    {
+        //        ViewBag.SearchQuery = searchQuery;
+        //        return View(todos);
+        //    }
+        //    return View(todos);
+        //}
+
+        public ActionResult Index()
+        {
+            var todos = toDoService.GetAll();
+            if (todos == null)
             {
-                todos = todos.Where(t => t.Title.Contains(searchQuery));
+                Debug.WriteLine("No Todos found");
+                todos = new List<ToDoModel>();
             }
-            ViewBag.SearchQuery = searchQuery;
-            return View(todos.ToList());
+            return View(todos);
         }
 
         [HttpPost]
@@ -29,8 +49,8 @@ namespace ToDoApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.ToDos.Add(todo);
-                db.SaveChanges();
+                toDoService.AddToDo(todo);
+
                 TempData["SuccessMessage"] = "To Do added successfully";
                 return RedirectToAction("Index");
             }
@@ -38,23 +58,49 @@ namespace ToDoApp.Controllers
             return RedirectToAction("Index");
         }
 
+        //modify this to create 
+        [HttpGet]
+        public ActionResult Edit(int id)
+        {
+            var existingToDo = toDoService.GetToDoById(id);
+            if (existingToDo == null)
+            {
+                TempData["ErrorMessage"] = "ToDo not found.";
+                return RedirectToAction("Index"); // Redirect back to the Index page
+            }
+            return View(existingToDo);
+        }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("ToDo/Edit/{id}")]
-        public ActionResult Edit(ToDoModel todo)
+        public ActionResult Edit(int id, ToDoModel toDoModel)
         {
+            if (toDoModel == null)
+            {
+                TempData["ErrorMessage"] = "Invalide ToDo Data";
+                return RedirectToAction("Index");
+            }
             if (ModelState.IsValid)
             {
-                var existingTodo = db.ToDos.Find(todo.Id);
-                if (existingTodo != null)
+                var existingToDo = toDoService.GetToDoById(id);
+
+                if (existingToDo == null)
                 {
-                    existingTodo.Title = todo.Title;
-                    existingTodo.Description = todo.Description;
-                    existingTodo.EditedDate = DateTime.Now;
-                    existingTodo.EditedBy = todo.EditedBy;
-                    db.SaveChanges();
-                    TempData["SuccessMessage"] = "Edit To Do done";
+                    TempData["ErrorMessage"] = "ToDo not found, unable to update.";
+                    return RedirectToAction("Index");
                 }
+
+                existingToDo.Title = toDoModel.Title;
+                existingToDo.Description = toDoModel.Description;
+                existingToDo.EditedDate = DateTime.Now;
+                existingToDo.EditedBy = "Nera";
+
+                toDoService.UpdateToDo(existingToDo);
+
+                TempData["SuccessMessage"] = "ToDo updated successfully.";
+                return RedirectToAction("Index");
             }
             TempData["ErrorMessage"] = "Data table error";
             return RedirectToAction("Index");
@@ -65,18 +111,10 @@ namespace ToDoApp.Controllers
         [Route("ToDo/Delete/{id}")]
         public ActionResult Delete(int id)
         {
-            var todo = db.ToDos.Find(id);
-            if (todo != null)
-            {
-                db.ToDos.Remove(todo);
-                db.SaveChanges();
-                TempData["SuccessMessage"] = "Deleted todo Successfully";
-                return RedirectToAction("Index");
-            }else
-            {
-                TempData["ErrorMessage"] = "Error deleting todo";
-            }
-                return RedirectToAction("Index");
+
+            toDoService.DeleteToDo(id);
+            TempData["SuccessMessage"] = $"Deleted todo Successfully: {id}";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

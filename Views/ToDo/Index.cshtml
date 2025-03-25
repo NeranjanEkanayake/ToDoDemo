@@ -1,5 +1,5 @@
 ﻿
-@model IEnumerable<ToDoApp.Models.ToDoModel>
+@model  List<ToDoApp.Models.ToDoModel>
 
 <div class="container">
 
@@ -42,6 +42,10 @@
     {
         <p class="text-muted">No matching results</p>
     }
+    @if (Model == null)
+    {
+        <p style="color:red">Model is Null</p>
+    }
 
 
     <div class="row">
@@ -67,8 +71,10 @@
             </div>
         </div>
 
-        @foreach (var todo in Model)
+        @for (int i = 0; i < Model.Count; i++)
         {
+            var todo = Model[i];
+
             <div class="col-md-4">
                 <div class="card" id="todoCard-@todo.Id">
                     <div class="card-body">
@@ -81,15 +87,15 @@
                             <p class="card-text">Edited By: @todo.EditedBy</p>
                             <p class="card-text">Edited At: @todo.EditedDate</p>
 
-                            @using (Html.BeginForm("Edit", "ToDo", FormMethod.Post, new
-                            {
-                                id = "editForm-" + todo.Id
-                            }))
+                            @using (Html.BeginForm("Edit", "ToDo", FormMethod.Post, new { id = "editForm-" + todo.Id }))
                             {
                                 @Html.AntiForgeryToken()
                                 @Html.HiddenFor(m => todo.Id)
                                 <button class="btn btn-warning btn-sm" type="button" onclick="toggleEdit(@todo.Id)">Edit</button>
                             }
+                            <!--
+                                <button class="btn btn-warning btn-sm" type="button" onclick="toggleEdit(@todo.Id)">Edit</button>
+                            -->
 
                             @using (Html.BeginForm("Delete", "ToDo", FormMethod.Post))
                             {
@@ -101,23 +107,23 @@
 
                         <!--Editing todos-->
                         <div id="editMode-@todo.Id" style="display:none;">
-
-                            @using (Html.BeginForm("Edit", "ToDo", FormMethod.Post))
+                            @using (Html.BeginForm("Edit", "ToDo", new { id = todo.Id }, FormMethod.Post))
                             {
                                 @Html.AntiForgeryToken()
                                 @Html.HiddenFor(m => todo.Id)
 
                                 <div class="form-group">
-                                    @Html.Label("Title")
-                                    @Html.TextBoxFor(m => todo.Title, new { @class = "form-control", required = "required" })
+                                    <label for="Title">Title</label>
+                                    <input type="text" name="Title" value="@todo.Title" class="form-control" required="required" />
                                 </div>
 
                                 <div class="form-group">
-                                    @Html.Label("Description")
-                                    @Html.TextAreaFor(m => todo.Description, new { @class = "form-control", required = "required" })
+                                    <label for="Description">Description</label>
+                                    <textarea name="Description" class="form-control" required="required">@todo.Description</textarea>
                                 </div>
 
                                 <button class="btn btn-success btn-sm" type="submit">Save</button>
+
                                 <button class="btn btn-secondary btn-sm" type="button" onclick="toggleView(@todo.Id)">Cancel</button>
                                 <p class="card-text">Created By: @todo.CreatedBy</p>
                                 <p class="card-text">Created At: @todo.CreatedDate</p>
