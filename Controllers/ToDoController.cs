@@ -43,8 +43,14 @@ namespace ToDoApp.Controllers
             return View(todos);
         }
 
+       public ActionResult Create()
+        {
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Route("ToDo/Create")]
         public ActionResult Create(ToDoModel todo)
         {
             if (ModelState.IsValid)
@@ -52,13 +58,13 @@ namespace ToDoApp.Controllers
                 toDoService.AddToDo(todo);
 
                 TempData["SuccessMessage"] = "To Do added successfully";
-                return RedirectToAction("Index");
+                return View(new ToDoModel());
             }
             TempData["ErrorMessage"] = "Failed to create the To Do";
-            return RedirectToAction("Index");
+            return View(todo);
         }
 
-        //modify this to create 
+       //modify this to create 
         [HttpGet]
         public ActionResult Edit(int id)
         {

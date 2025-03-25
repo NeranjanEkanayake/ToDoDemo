@@ -2,6 +2,27 @@
 @{
     ViewBag.Title = "Create";
 }
-
-<h2>Create Task</h2>
+<!--Add new todos-->
+<div class="container">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Add new todo</h5>
+                @using (Html.BeginForm("Create", "ToDo", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="form-group">
+                        @Html.LabelFor(m => m.Title)
+                        @Html.TextBoxFor(m => m.Title, null, new { @class = "form-control", placeholder = "Title", required = "required" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(x => x.Description)
+                        @Html.TextArea("Description", null, new { @class = "form-control", placeholder = "Description" })
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
