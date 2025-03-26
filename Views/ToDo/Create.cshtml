@@ -12,10 +12,10 @@
                 {
                     @Html.AntiForgeryToken()
 
-                    if(Model.Id !=0)
-                {
-                    @Html.HiddenFor(m=>m.Id)
-                }
+                    if (Model.Id != 0)
+                    {
+                        @Html.HiddenFor(m => m.Id)
+                    }
                     <div class="form-group">
                         @Html.LabelFor(m => m.Title)
                         @Html.TextBoxFor(m => m.Title, null, new { @class = "form-control", placeholder = "Title", required = "required" })

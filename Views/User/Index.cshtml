@@ -1,0 +1,41 @@
+﻿@model ToDoApp.Models.UserModel
+
+@{ 
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                @using (Html.BeginForm("Index", "User", FormMethod.Post))
+                {
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        @Html.TextBoxFor(m => m.Username, new {@class = "form-control", placeholder = "Username"})
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Password" })
+                    </div>
+                    <!--
+            <div class="form-group form-check">
+            <input type="checkbox" class="form-check-input" id="exampleCheck1">
+            <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                </div>
+        -->
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                }
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger mt-3">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p>@error.ErrorMessage</p>
+                        }
+                    </div>
+                }
+                </div>
+        </div>        
+    </div>    
+</div>

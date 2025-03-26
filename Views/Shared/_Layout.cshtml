@@ -12,27 +12,30 @@
 <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <p class="navbar-brand">ToDo App</p>
-            <!--
-                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
-            aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarScroll">
-        <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">Home</a>
-            </li>
-        </ul>
-    </div>.
-        -->
+            <ul class="navbar-nav ml-auto">
+
+                @if (Session["Username"] != null)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary" href="@Url.Action("CreateUser","User")">Add User</a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, @Session["Username"]</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-danger text-white" href="@Url.Action("Logout", "User")">Logout</a>
+                    </li>
+                }
+
+            </ul>
+            
         </div>
     </nav>
     <div class="container body-content">
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            <p>&copy; @DateTime.Now.Year - To Do App</p>
         </footer>
     </div>
 

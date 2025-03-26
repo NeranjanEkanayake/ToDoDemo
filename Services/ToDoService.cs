@@ -38,17 +38,12 @@ namespace ToDoApp.Services
         }
 
         public void UpdateToDo(ToDoModel toDoModel)
-        {
-            Console.WriteLine($"Id:{toDoModel.Id}");
-            Console.WriteLine($"Title:{toDoModel.Title}");
-            Console.WriteLine($"Id:{toDoModel.Description}");
-   
+        {   
             if (toDoModel == null) { 
                 throw new ArgumentNullException(nameof(toDoModel)); 
             }
           
             var existingToDo = context.ToDos.Find(toDoModel.Id);
-            Console.WriteLine($"Looking for ToDo with ID: {toDoModel.Id}");
             if (existingToDo != null)
             {
                 existingToDo.Title = toDoModel.Title;

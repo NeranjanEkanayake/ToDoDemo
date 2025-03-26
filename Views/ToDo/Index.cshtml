@@ -67,8 +67,7 @@
             <div class="col-md-4">
                 <div class="card" id="todoCard-@todo.Id">
                     <div class="card-body">
-                        <!--Viewing todos-->
-                        <div id="viewMode-@todo.Id">
+                        <div>
                             <h5 class="card-title">@todo.Title</h5>
                             <p class="card-text">@todo.Description</p>
                             <p class="card-text">Created By: @todo.CreatedBy</p>
@@ -90,14 +89,3 @@
         }
     </div>
 </div>
-<script>
-    function toggleEdit(id) {
-        document.getElementById("viewMode-" + id).style.display = "none";
-        document.getElementById("editMode-" + id).style.display = "block";
-    }
-
-    function toggleView(id) {
-        document.getElementById("viewMode-" + id).style.display = "block";
-        document.getElementById("editMode-" + id).style.display = "none";
-    }
-</script>
