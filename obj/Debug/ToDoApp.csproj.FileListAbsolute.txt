@@ -121,3 +121,5 @@ D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Container.dll
 D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Mvc5.dll
 D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Abstractions.pdb
 D:\C# demo\ToDoApp\ToDoApp\bin\Unity.Container.pdb
+D:\C# demo\ToDoApp\ToDoApp\bin\BCrypt.Net-Next.dll
+D:\C# demo\ToDoApp\ToDoApp\bin\BCrypt.Net-Next.xml

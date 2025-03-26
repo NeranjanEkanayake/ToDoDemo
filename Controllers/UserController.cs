@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BCrypt.Net;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -11,7 +12,8 @@ namespace ToDoApp.Controllers
     public class UserController : Controller
     {
         private readonly UserService _userService;
-        public UserController(UserService userService) {
+        public UserController(UserService userService)
+        {
             _userService = userService;
         }
 
@@ -26,12 +28,14 @@ namespace ToDoApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                
+
                 bool isAuthenticated = _userService.AuthenticateUser(userModel.Username, userModel.Password);
 
                 if (isAuthenticated)
                 {
+                    var user = _userService.GetUserById(userModel.Id);
                     Session["Username"] = userModel.Username;
-                    Session["Name"] = userModel.Name;
                     return RedirectToAction("Index", "ToDo");
                 }
                 else
@@ -76,33 +80,37 @@ namespace ToDoApp.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CreateUser(UserModel userModel)
         {
-                if (ModelState.IsValid)
+            if (ModelState.IsValid)
+            {
+                if (userModel.Id == 0)
                 {
-                    if (userModel.Id == 0)
-                    {
-                        _userService.CreateUser(userModel);
+                    userModel.Password = BCrypt.Net.BCrypt.HashPassword(userModel.Password);
+                    _userService.CreateUser(userModel);
 
-                        TempData["SuccessMessage"] = "Created user successfully";
-                    }
-                    else
-                    {
-                        var existingUser = _userService.GetUserById(userModel.Id);
-
-                        if (existingUser != null)
-                        {
-                            existingUser.Username = userModel.Username;
-                            existingUser.Password = userModel.Password;
-                            existingUser.Name = userModel.Name;
-
-                            _userService.UpdateUser(existingUser);
-                            TempData["SuccessMessage"] = "Added user successfully";                            
-                        }
-                        
-                    }
-                    return RedirectToAction("Index", "ToDo");
+                    TempData["SuccessMessage"] = "Created user successfully";
                 }
+                else
+                {
+                    var existingUser = _userService.GetUserById(userModel.Id);
 
-            return View(userModel);          
+                    if (existingUser != null)
+                    {
+                        existingUser.Username = userModel.Username;
+                        existingUser.Name = userModel.Name;
+
+                        if (!string.IsNullOrEmpty(userModel.Password))
+                        {
+                            existingUser.Password = BCrypt.Net.BCrypt.HashPassword(userModel.Password);
+                        }
+                        _userService.UpdateUser(existingUser);
+                        TempData["SuccessMessage"] = "Added user successfully";
+                    }
+
+                }
+                return RedirectToAction("Index", "ToDo");
+            }
+
+            return View(userModel);
         }
 
         // GET: User/Edit/5

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BCrypt.Net;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -34,7 +35,10 @@ namespace ToDoApp.Services
             {
                 return false;
             }
-            return user.Password == password;
+
+            bool passwordValid = BCrypt.Net.BCrypt.Verify(password, user.Password);
+
+            return passwordValid;
         }
 
         
