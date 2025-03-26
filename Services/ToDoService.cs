@@ -28,7 +28,7 @@ namespace ToDoApp.Services
 
         public ToDoModel GetByName(string toDo)
         {
-            return context.ToDos.Find(toDo);
+            return context.ToDos.FirstOrDefault(t=> t.Title.Equals(toDo,StringComparison.OrdinalIgnoreCase));
         }
 
         public void AddToDo(ToDoModel toDoModel)

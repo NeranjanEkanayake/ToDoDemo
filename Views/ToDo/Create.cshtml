@@ -7,10 +7,15 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Add new todo</h5>
+                <h5 class="card-title">@((Model.Id == 0)? "Add new todo":"Edit To Do") </h5>
                 @using (Html.BeginForm("Create", "ToDo", FormMethod.Post))
                 {
                     @Html.AntiForgeryToken()
+
+                    if(Model.Id !=0)
+                {
+                    @Html.HiddenFor(m=>m.Id)
+                }
                     <div class="form-group">
                         @Html.LabelFor(m => m.Title)
                         @Html.TextBoxFor(m => m.Title, null, new { @class = "form-control", placeholder = "Title", required = "required" })
@@ -19,7 +24,10 @@
                         @Html.LabelFor(x => x.Description)
                         @Html.TextArea("Description", null, new { @class = "form-control", placeholder = "Description" })
                     </div>
-                    <button type="submit" class="btn btn-primary">Add</button>
+                    <button type="submit" class="btn btn-primary">
+                        @((Model.Id ==0 )?"Add":"Update")
+                    </button>
+                    <a href="@Url.Action("Index", "ToDo")" class="btn btn-secondary btn-danger">Close</a>
                 }
             </div>
         </div>

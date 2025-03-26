@@ -6,8 +6,7 @@
 }
 
 <div class="container">
-
-    <form method="get" action="@Url.Action("Index", "ToDo")" class="mb-3">
+    <form method="get" action="@Url.Action("Search", "ToDo")" class="mb-3">
         <div class="row">
             <div class="col-md-4">
                 <div class="input-group">
@@ -40,7 +39,6 @@
                 }
             </div>
         }
-
     }
     else
     {
@@ -53,7 +51,15 @@
 
 
     <div class="row">
-        
+        <div class="col-md-4">
+            <div class="card text-bg-info text-center">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <a href="@Url.Action("Create", "ToDo")" class="nav-link text-dark">
+                        <i class="bi bi-plus-square fs-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
         @for (int i = 0; i < Model.Count; i++)
         {
             var todo = Model[i];
@@ -70,48 +76,12 @@
                             <p class="card-text">Edited By: @todo.EditedBy</p>
                             <p class="card-text">Edited At: @todo.EditedDate</p>
 
-                            @using (Html.BeginForm("Edit", "ToDo", FormMethod.Post, new { id = "editForm-" + todo.Id }))
-                            {
-                                @Html.AntiForgeryToken()
-                                @Html.HiddenFor(m => todo.Id)
-                                <button class="btn btn-warning btn-sm" type="button" onclick="toggleEdit(@todo.Id)">Edit</button>
-                            }
-                            <!--
-                                <button class="btn btn-warning btn-sm" type="button" onclick="toggleEdit(@todo.Id)">Edit</button>
-                            -->
-
+                            <a href="@Url.Action("Create","ToDo", new { id = todo.Id})" class="btn btn-warning btn-sm">Edit</a>
                             @using (Html.BeginForm("Delete", "ToDo", FormMethod.Post))
                             {
                                 @Html.AntiForgeryToken()
                                 @Html.Hidden("id", todo.Id)
                                 <button class="btn btn-danger btn-sm" onclick="return confirm('Delete To Do?');">Delete</button>
-                            }
-                        </div>
-
-                        <!--Editing todos-->
-                        <div id="editMode-@todo.Id" style="display:none;">
-                            @using (Html.BeginForm("Edit", "ToDo", new { id = todo.Id }, FormMethod.Post))
-                            {
-                                @Html.AntiForgeryToken()
-                                @Html.HiddenFor(m => todo.Id)
-
-                                <div class="form-group">
-                                    <label for="Title">Title</label>
-                                    <input type="text" name="Title" value="@todo.Title" class="form-control" required="required" />
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="Description">Description</label>
-                                    <textarea name="Description" class="form-control" required="required">@todo.Description</textarea>
-                                </div>
-
-                                <button class="btn btn-success btn-sm" type="submit">Save</button>
-
-                                <button class="btn btn-secondary btn-sm" type="button" onclick="toggleView(@todo.Id)">Cancel</button>
-                                <p class="card-text">Created By: @todo.CreatedBy</p>
-                                <p class="card-text">Created At: @todo.CreatedDate</p>
-                                <p class="card-text">Edited By: @todo.EditedBy</p>
-                                <p class="card-text">Edited At: @todo.EditedDate</p>
                             }
                         </div>
                     </div>
