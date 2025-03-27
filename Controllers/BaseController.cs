@@ -8,10 +8,25 @@ namespace ToDoApp.Controllers
 {
     public class BaseController : Controller
     {
-        // GET: Base
-        public ActionResult Index()
+        protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            return View();
+
+            var allowAnonymous = filterContext.ActionDescriptor.GetCustomAttributes(typeof(AllowAnonymousAttribute), false).Length > 0;
+
+            if (!allowAnonymous && !User.Identity.IsAuthenticated)
+            {
+                filterContext.Result = new RedirectToRouteResult(
+                    new System.Web.Routing.RouteValueDictionary(
+                        new { controller = "User", action = "Index" }
+                    )
+                );
+            }
+            // Prevent Back Button After Logout (Disable Browser Cache)
+            HttpContext.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            HttpContext.Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
+            HttpContext.Response.Cache.SetNoStore();
+
+            base.OnActionExecuting(filterContext);
         }
     }
 }

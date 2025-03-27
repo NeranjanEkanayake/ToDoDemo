@@ -21,10 +21,16 @@ namespace ToDoApp.Services
         {
             return _context.Users.ToList();
         }
+        public UserModel GetUserByUsername(string username)
+        {
+            var tempUser = _context.Users.FirstOrDefault(x => x.Username == username);
+            return tempUser;
+        }
 
         public UserModel GetUserById(int id)
         {
-            return _context.Users.Find(id);
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            return user;
         }
 
         public bool AuthenticateUser(string username, string password)

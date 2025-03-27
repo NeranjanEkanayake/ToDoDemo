@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 using ToDoApp.Models;
 using ToDoApp.Services;
 
@@ -28,15 +29,19 @@ namespace ToDoApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                
-
                 bool isAuthenticated = _userService.AuthenticateUser(userModel.Username, userModel.Password);
 
                 if (isAuthenticated)
                 {
-                    var user = _userService.GetUserById(userModel.Id);
-                    Session["Username"] = userModel.Username;
-                    return RedirectToAction("Index", "ToDo");
+                    var tempUser = _userService.GetUserByUsername(userModel.Username);
+
+                    if (tempUser != null)
+                    {
+                        var user = _userService.GetUserById(tempUser.Id);
+                        Session["Username"] = user.Username;
+                        Session["Name"] = user.Name;
+                        return RedirectToAction("Index", "ToDo");
+                    }
                 }
                 else
                 {
@@ -45,10 +50,18 @@ namespace ToDoApp.Controllers
             }
             return View(userModel);
         }
-
+        
         public ActionResult Logout()
         {
-            Session.Clear(); // Clear session
+            Session.Clear();
+            Session.Abandon();
+
+            FormsAuthentication.SignOut();
+
+            Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            Response.Cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
+            Response.Cache.SetNoStore();
+
             return RedirectToAction("Index", "User");
         }
 

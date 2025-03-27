@@ -10,35 +10,50 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            @if (Session["Username"] != null)
-            {
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                if (Session["Username"].ToString() == "admin")
+            <div class="d-flex align-items-center">
+                @if (Session["Username"] != null)
                 {
-                    <div>
-                        <a class="nav-link btn btn-secondary" href="@Url.Action("UserList","User")">Display Users</a>
-                    </div>
-                    <div class="nav-item align-self-baseline">
-                        <a class="nav-link btn btn-primary" href="@Url.Action("CreateUser","User")">Add User</a>
-                    </div>
+                    <span class="navbar-brand">Welcome, @Session["Name"]</span>
                 }
-                <div class="nav-item align-self-center">
-                    <span class="nav-link">Welcome, @Session["Username"]</span>
-                </div>
-                <div class="nav-item align-self-end">
-                    <a class="nav-link btn btn-danger text-white" href="@Url.Action("Logout", "User")">Logout</a>
-                </div>
-            }
+            </div>
+
+            <div class="d-flex justify-content-center flex-grow-1">
+                <ul class="navbar-nav">
+                    @if (Session["Username"] != null && Session["Username"].ToString() == "admin")
+                    {
+                        <li class="nav-item mx-2">
+                            <a class="nav-link btn btn-secondary text-white" href="@Url.Action("UserList","User")">Display Users</a>
+                        </li>
+                        <li class="nav-item mx-2">
+                            <a class="nav-link btn btn-primary text-white" href="@Url.Action("CreateUser","User")">Add User</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <ul class="navbar-nav">
+                    @if (Session["Username"] != null)
+                    {
+                        <li class="nav-item mx-2">
+                            <a class="nav-link btn btn-danger text-white" href="@Url.Action("Logout", "User")">Logout</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+
         </div>
     </nav>
     <div class="container body-content">
         @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - To Do App</p>
-        </footer>
+        
     </div>
 
     @Scripts.Render("~/bundles/jquery")

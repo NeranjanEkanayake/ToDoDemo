@@ -74,14 +74,22 @@
                             <p class="card-text">Created At: @todo.CreatedDate</p>
                             <p class="card-text">Edited By: @todo.EditedBy</p>
                             <p class="card-text">Edited At: @todo.EditedDate</p>
-
-                            <a href="@Url.Action("Create","ToDo", new { id = todo.Id})" class="btn btn-warning btn-sm">Edit</a>
-                            @using (Html.BeginForm("Delete", "ToDo", FormMethod.Post))
-                            {
-                                @Html.AntiForgeryToken()
-                                @Html.Hidden("id", todo.Id)
-                                <button class="btn btn-danger btn-sm" onclick="return confirm('Delete To Do?');">Delete</button>
-                            }
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex justify-content-between">                                        
+                                            <a href="@Url.Action("Create","ToDo", new { id = todo.Id})" class="btn btn-warning btn-sm">Edit</a>
+                                        
+                                            @using (Html.BeginForm("Delete", "ToDo", FormMethod.Post))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                @Html.Hidden("id", todo.Id)
+                                                <button class="btn btn-danger btn-sm" onclick="return confirm('Delete To Do?');">Delete</button>
+                                            }                                        
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                            
                         </div>
                     </div>
                 </div>
