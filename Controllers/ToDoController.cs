@@ -49,13 +49,6 @@ namespace ToDoApp.Controllers
             return View(todos);
         }
 
-        //public ActionResult Create()
-        //{
-        //    return View();
-        //}
-
-        
-
         public ActionResult Create(int? id)
         {
             ToDoModel model = new ToDoModel();
@@ -111,7 +104,6 @@ namespace ToDoApp.Controllers
             return View(todo);
         }
 
-        //modify this to create 
         [HttpGet]
         public ActionResult Edit(int id)
         {
@@ -123,7 +115,6 @@ namespace ToDoApp.Controllers
             }
             return View(existingToDo);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]

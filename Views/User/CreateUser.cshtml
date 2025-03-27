@@ -1,5 +1,4 @@
 ﻿@model ToDoApp.Models.UserModel
-
 @{
     ViewBag.Title = "CreateUser";
 }
@@ -41,7 +40,7 @@
                                 <div class="d-flex justify-content-center">
                                     <button type="submit" data-mdb-button-init
                                             data-mdb-ripple-init class="btn btn-success btn-block btn-lg gradient-custom-4 text-body">
-                                        Register
+                                        @((Model.Id == 0)?"Register":"Update")
                                     </button>
                                     <a href="@Url.Action("Index", "ToDo")" class="btn btn-secondary btn-danger">Close</a>
                                 </div>

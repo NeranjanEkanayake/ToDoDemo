@@ -52,10 +52,15 @@ namespace ToDoApp.Controllers
             return RedirectToAction("Index", "User");
         }
 
-        // GET: User/Details/5
-        public ActionResult Details(int id)
+        // GET: User/UserList/5
+        public ActionResult UserList()
         {
-            return View();
+            if (Session["Username"] == null || Session["Username"].ToString() != "admin")
+            {
+                return RedirectToAction("Index", "ToDo");
+            }
+            var users = _userService.GetAll();
+            return View(users);
         }
 
         // GET: User/Create
@@ -113,48 +118,61 @@ namespace ToDoApp.Controllers
             return View(userModel);
         }
 
-        // GET: User/Edit/5
-        public ActionResult Edit(int id)
+        // GET: User/EditUser/5
+        public ActionResult EditUser(int id)
         {
-            return View();
+            var existingUser = _userService.GetUserById(id);
+
+            if(existingUser == null)
+            {
+                TempData["ErrorMessage"] = "User not found";
+                return RedirectToAction("UserList");
+            }
+            return View(existingUser);
         }
 
         // POST: User/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
+        [ValidateAntiForgeryToken]
+        [Route("User/EditUser/{id}")]
+        public ActionResult EditUser(int id, UserModel userModel)
         {
-            try
+            if (userModel == null)
             {
-                // TODO: Add update logic here
+                TempData["ErrorMessage"] = "Invalid User";
 
                 return RedirectToAction("Index");
             }
-            catch
+            if (ModelState.IsValid)
             {
-                return View();
+                var existingUser = _userService.GetUserById(id);
+                if (existingUser == null)
+                {
+                    TempData["ErrorMessage"] = "Error getting user, unable to update";
+                    return RedirectToAction("UserList");
+                }
+
+                existingUser.Username = userModel.Username;
+                existingUser.Name = userModel.Name;
+                existingUser.Password = userModel.Password;
+
+                _userService.UpdateUser(existingUser);
+                TempData["SuccessMessage"] = "Updated user successfully";
+                return RedirectToAction("UserList");
             }
+            TempData["ErrorMessage"] = "Data table unavailable";
+            return RedirectToAction("UserList");
         }
 
-        // GET: User/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
 
-        // POST: User/Delete/5
         [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
+        [ValidateAntiForgeryToken]
+        [Route("User/DeleteUser/{id}")]
+        public ActionResult DeleteUser(int id)
         {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
+            _userService.DeleteUser(id);
+            TempData["SuccessMessage"] = "User Deleted successfully";
+            return RedirectToAction(nameof(UserList));
         }
     }
 }
