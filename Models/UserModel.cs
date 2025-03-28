@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNet.Identity.EntityFramework;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -6,12 +7,18 @@ using System.Web;
 
 namespace ToDoApp.Models
 {
-    [Table("UserModel", Schema = "public")]
-    public class UserModel
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Username {  get; set; }
-        public string Password { get; set; }
+    public class UserModel : IdentityUser<int, UserLogin, UserRole, UserClaim>
+    {        
+        public string Name { get; set; } 
+        public string Role { get; set; }
+
+        public UserModel() 
+        {
+            Role = "User";
+        }
     }
+
+    public class UserLogin : IdentityUserLogin<int> { }
+    public class UserRole : IdentityUserRole<int> { }
+    public class UserClaim : IdentityUserClaim<int> { }
 }

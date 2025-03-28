@@ -10,10 +10,12 @@ using ToDoApp.Services;
 
 namespace ToDoApp.Controllers
 {
+    [Authorize]
     public class ToDoController : Controller
     {
         public readonly ToDoService toDoService;
 
+        public readonly UserService userService;
         public ToDoController(ToDoService _toDoService)
         {
             toDoService = _toDoService;
@@ -40,13 +42,21 @@ namespace ToDoApp.Controllers
 
         public ActionResult Index()
         {
-            var todos = toDoService.GetAll();
-            if (todos == null)
-            {
-                Debug.WriteLine("No Todos found");
-                todos = new List<ToDoModel>();
-            }
-            return View(todos);
+            var username = User.Identity.Name;
+            //var user = userService.GetUserByUsername(username);
+            //if (user != null)
+            //{
+                var todos = toDoService.GetAll();
+                if (todos == null)
+                {
+                    Debug.WriteLine("No Todos found");
+                    todos = new List<ToDoModel>();
+                }
+                return View(todos);
+
+            //}
+            //return RedirectToAction("Login", "AuthUser");
+
         }
 
         public ActionResult Create(int? id)
@@ -72,8 +82,13 @@ namespace ToDoApp.Controllers
         {
             if (ModelState.IsValid)
             {
+                string currentUser = User.Identity.Name;
                 if(todo.Id == 0)
                 {
+                    todo.CreatedBy = currentUser;
+                    todo.CreatedDate = DateTime.Now;
+                    todo.EditedBy = "-";
+                    
                     toDoService.AddToDo(todo);
 
                     TempData["SuccessMessage"] = "To Do added successfully";
@@ -89,11 +104,11 @@ namespace ToDoApp.Controllers
                         return RedirectToAction("Index");
                     }
 
+                    existingToDo.EditedBy = currentUser;
+                    existingToDo.EditedDate = DateTime.Now;
                     existingToDo.Title = todo.Title;
                     existingToDo.Description = todo.Description;
-                    existingToDo.EditedDate = DateTime.Now;
-                    existingToDo.EditedBy = "Nera";
-
+                    
                     toDoService.UpdateToDo(existingToDo);
 
                     TempData["SuccessMessage"] = "ToDo updated successfully.";
@@ -104,51 +119,51 @@ namespace ToDoApp.Controllers
             return View(todo);
         }
 
-        [HttpGet]
-        public ActionResult Edit(int id)
-        {
-            var existingToDo = toDoService.GetToDoById(id);
-            if (existingToDo == null)
-            {
-                TempData["ErrorMessage"] = "ToDo not found.";
-                return RedirectToAction("Index"); // Redirect back to the Index page
-            }
-            return View(existingToDo);
-        }
+        //[HttpGet]
+        //public ActionResult Edit(int id)
+        //{
+        //    var existingToDo = toDoService.GetToDoById(id);
+        //    if (existingToDo == null)
+        //    {
+        //        TempData["ErrorMessage"] = "ToDo not found.";
+        //        return RedirectToAction("Index"); // Redirect back to the Index page
+        //    }
+        //    return View(existingToDo);
+        //}
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Route("ToDo/Edit/{id}")]
-        public ActionResult Edit(int id, ToDoModel toDoModel)
-        {
-            if (toDoModel == null)
-            {
-                TempData["ErrorMessage"] = "Invalide ToDo Data";
-                return RedirectToAction("Index");
-            }
-            if (ModelState.IsValid)
-            {
-                var existingToDo = toDoService.GetToDoById(id);
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //[Route("ToDo/Edit/{id}")]
+        //public ActionResult Edit(int id, ToDoModel toDoModel)
+        //{
+        //    if (toDoModel == null)
+        //    {
+        //        TempData["ErrorMessage"] = "Invalide ToDo Data";
+        //        return RedirectToAction("Index");
+        //    }
+        //    if (ModelState.IsValid)
+        //    {
+        //        var existingToDo = toDoService.GetToDoById(id);
 
-                if (existingToDo == null)
-                {
-                    TempData["ErrorMessage"] = "ToDo not found, unable to update.";
-                    return RedirectToAction("Index");
-                }
+        //        if (existingToDo == null)
+        //        {
+        //            TempData["ErrorMessage"] = "ToDo not found, unable to update.";
+        //            return RedirectToAction("Index");
+        //        }
 
-                existingToDo.Title = toDoModel.Title;
-                existingToDo.Description = toDoModel.Description;
-                existingToDo.EditedDate = DateTime.Now;
-                existingToDo.EditedBy = "Nera";
+        //        existingToDo.Title = toDoModel.Title;
+        //        existingToDo.Description = toDoModel.Description;
+        //        existingToDo.EditedDate = DateTime.Now;
+        //        existingToDo.EditedBy = "Nera";
 
-                toDoService.UpdateToDo(existingToDo);
+        //        toDoService.UpdateToDo(existingToDo);
 
-                TempData["SuccessMessage"] = "ToDo updated successfully.";
-                return RedirectToAction("Index");
-            }
-            TempData["ErrorMessage"] = "Data table error";
-            return RedirectToAction("Index");
-        }
+        //        TempData["SuccessMessage"] = "ToDo updated successfully.";
+        //        return RedirectToAction("Index");
+        //    }
+        //    TempData["ErrorMessage"] = "Data table error";
+        //    return RedirectToAction("Index");
+        //}
 
         [HttpPost]
         [ValidateAntiForgeryToken]

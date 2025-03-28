@@ -19,7 +19,7 @@
             var user = Model[i];
             <tr>
                 <td>@user.Id</td>
-                <td>@user.Username</td>
+                <td>@user.UserName</td>
                 <td>@user.Name</td>
                 <td>
                     <a class="btn btn-sm btn-info" href="@Url.Action("CreateUser", "User", new {id = user.Id})">Edit</a>

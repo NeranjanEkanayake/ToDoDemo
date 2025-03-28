@@ -21,6 +21,8 @@ namespace ToDoApp
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
+
+            Database.SetInitializer(new ApplicationDbInitializer());
             Database.SetInitializer <ApplicationDbContext>(null);
         }
     }

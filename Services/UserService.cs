@@ -8,6 +8,7 @@ using ToDoApp.Models;
 
 namespace ToDoApp.Services
 {
+    [Authorize]
     public class UserService
     {
         private readonly ApplicationDbContext _context;
@@ -24,7 +25,7 @@ namespace ToDoApp.Services
 
         public UserModel GetUserByUsername(string username)
         {
-            var tempUser = _context.Users.FirstOrDefault(x=>x.Username == username);
+            var tempUser = _context.Users.FirstOrDefault(x=>x.UserName == username);
             return tempUser;
         }
 
@@ -35,14 +36,14 @@ namespace ToDoApp.Services
 
         public bool AuthenticateUser(string username, string password)
         {
-            var user = _context.Users.SingleOrDefault(u => u.Username == username);
+            var user = _context.Users.SingleOrDefault(u => u.UserName == username);
 
             if (user == null)
             {
                 return false;
             }
 
-            bool passwordValid = BCrypt.Net.BCrypt.Verify(password, user.Password);
+            bool passwordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
 
             return passwordValid;
         }
@@ -69,8 +70,8 @@ namespace ToDoApp.Services
             var existingUser = _context.Users.Find(user.Id);
             if (existingUser != null)
             {
-                existingUser.Username = user.Username;
-                existingUser.Password = user.Password;
+                existingUser.UserName = user.UserName;
+                existingUser.PasswordHash = user.PasswordHash;
                 existingUser.Name = user.Name;
 
                 _context.SaveChanges();

@@ -9,6 +9,7 @@ using ToDoApp.Services;
 
 namespace ToDoApp.Controllers
 {
+    [Authorize]
     public class UserController : Controller
     {
         private readonly UserService _userService;
@@ -17,54 +18,41 @@ namespace ToDoApp.Controllers
             _userService = userService;
         }
 
-        // GET: User
-        public ActionResult Index()
-        {
-            return View();
-        }
-
-        [HttpPost]
-        public ActionResult Index(UserModel userModel)
-        {
-            if (ModelState.IsValid)
-            {   
-                bool isAuthenticated = _userService.AuthenticateUser(userModel.Username, userModel.Password);
-
-                if (isAuthenticated)
-                {
-                    var tempUser = _userService.GetUserByUsername(userModel.Username);
-                    if (tempUser != null)
-                    {
-                        var user = _userService.GetUserById(tempUser.Id);
-                        Session["Username"] = user.Username;
-                        Session["Name"] = user.Name;
-                        return RedirectToAction("Index", "ToDo");
-                    }                    
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Invalid username or password");
-                }
-            }
-            return View(userModel);
-        }
-
-        public ActionResult Logout()
-        {
-            Session.Clear(); // Clear session
-            return RedirectToAction("Index", "User");
-        }
-
         // GET: User/UserList/5
         public ActionResult UserList()
         {
-            if (Session["Username"] == null || Session["Username"].ToString() != "admin")
+            // Get logged-in user username from identity
+            var username = User.Identity.Name;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "AuthUser"); // If not authenticated, redirect to login
+            }
+
+            // Fetch the user by username and get their role
+            var user = _userService.GetAll().FirstOrDefault(u => u.UserName == username);
+
+            if (user != null)
+            {
+                ViewBag.UserRole = user.Role;  // Assuming 'Role' is your custom column in the User table
+            }
+
+            if (user?.Role != "Admin")  // Check if the user is not an Admin
             {
                 return RedirectToAction("Index", "ToDo");
             }
+
             var users = _userService.GetAll();
             return View(users);
         }
+
+        //    if (Session["Username"] == null || Session["Username"].ToString() != "admin")
+        //    {
+        //        return RedirectToAction("Index", "ToDo");
+        //    }
+        //    var users = _userService.GetAll();
+        //    return View(users);
+        //}
 
         // GET: User/Create
         public ActionResult CreateUser(int? id)
@@ -92,7 +80,7 @@ namespace ToDoApp.Controllers
             {
                 if (userModel.Id == 0)
                 {
-                    userModel.Password = BCrypt.Net.BCrypt.HashPassword(userModel.Password);
+                    userModel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userModel.PasswordHash);
                     _userService.CreateUser(userModel);
 
                     TempData["SuccessMessage"] = "Created user successfully";
@@ -103,12 +91,12 @@ namespace ToDoApp.Controllers
 
                     if (existingUser != null)
                     {
-                        existingUser.Username = userModel.Username;
+                        existingUser.UserName = userModel.UserName;
                         existingUser.Name = userModel.Name;
 
-                        if (!string.IsNullOrEmpty(userModel.Password))
+                        if (!string.IsNullOrEmpty(userModel.PasswordHash))
                         {
-                            existingUser.Password = BCrypt.Net.BCrypt.HashPassword(userModel.Password);
+                            existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userModel.PasswordHash);
                         }
                         _userService.UpdateUser(existingUser);
                         TempData["SuccessMessage"] = "Added user successfully";
@@ -155,9 +143,9 @@ namespace ToDoApp.Controllers
                     return RedirectToAction("UserList");
                 }
 
-                existingUser.Username = userModel.Username;
+                existingUser.UserName = userModel.UserName;
                 existingUser.Name = userModel.Name;
-                existingUser.Password = userModel.Password;
+                existingUser.PasswordHash = userModel.PasswordHash;
 
                 _userService.UpdateUser(existingUser);
                 TempData["SuccessMessage"] = "Updated user successfully";

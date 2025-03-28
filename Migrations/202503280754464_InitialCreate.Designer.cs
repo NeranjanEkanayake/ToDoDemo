@@ -13,7 +13,7 @@ namespace ToDoApp.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202503240429273_InitialCreate"; }
+            get { return "202503280754464_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source

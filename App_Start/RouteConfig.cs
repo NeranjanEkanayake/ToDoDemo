@@ -16,7 +16,7 @@ namespace ToDoApp
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "User", action = "Index", id = UrlParameter.Optional }
+                defaults: new { controller = "AuthUser", action = "Login", id = UrlParameter.Optional }
             );
         }
     }
