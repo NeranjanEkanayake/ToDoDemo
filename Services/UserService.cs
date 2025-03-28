@@ -22,6 +22,12 @@ namespace ToDoApp.Services
             return _context.Users.ToList();
         }
 
+        public UserModel GetUserByUsername(string username)
+        {
+            var tempUser = _context.Users.FirstOrDefault(x=>x.Username == username);
+            return tempUser;
+        }
+
         public UserModel GetUserById(int id)
         {
             return _context.Users.Find(id);

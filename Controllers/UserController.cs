@@ -27,16 +27,19 @@ namespace ToDoApp.Controllers
         public ActionResult Index(UserModel userModel)
         {
             if (ModelState.IsValid)
-            {
-                
-
+            {   
                 bool isAuthenticated = _userService.AuthenticateUser(userModel.Username, userModel.Password);
 
                 if (isAuthenticated)
                 {
-                    var user = _userService.GetUserById(userModel.Id);
-                    Session["Username"] = userModel.Username;
-                    return RedirectToAction("Index", "ToDo");
+                    var tempUser = _userService.GetUserByUsername(userModel.Username);
+                    if (tempUser != null)
+                    {
+                        var user = _userService.GetUserById(tempUser.Id);
+                        Session["Username"] = user.Username;
+                        Session["Name"] = user.Name;
+                        return RedirectToAction("Index", "ToDo");
+                    }                    
                 }
                 else
                 {
