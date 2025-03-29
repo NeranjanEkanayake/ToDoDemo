@@ -14,6 +14,7 @@ namespace ToDoApp
     {
         protected void Application_Start()
         {
+
             UnityConfig.RegisterComponents();
             AreaRegistration.RegisterAllAreas();
             

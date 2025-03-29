@@ -8,6 +8,8 @@ using System.Web.Security;
 using ToDoApp.Services;
 using System.Web.UI.WebControls;
 using ToDoApp.Models;
+using Microsoft.AspNet.Identity;
+using System.Net;
 
 namespace ToDoApp.Controllers
 {
@@ -31,28 +33,26 @@ namespace ToDoApp.Controllers
 
             if (user != null)
             {
-                var passwordHasher = new Microsoft.AspNet.Identity.PasswordHasher();
+                var passwordHasher = new PasswordHasher();
                 var result = passwordHasher.VerifyHashedPassword(user.PasswordHash, password);
 
                 if (result == Microsoft.AspNet.Identity.PasswordVerificationResult.Success)
                 {
                     var authTicket = new FormsAuthenticationTicket(
                         1,
-                        username,
+                        user.UserName,
                         DateTime.Now, 
                         DateTime.Now.AddMinutes(30),
                         false,
-                        user.Role,
-                        FormsAuthentication.FormsCookiePath
+                        user.Role
                         );
-
+                   
                     // Encrypt the ticket
                     string encryptedTicket = FormsAuthentication.Encrypt(authTicket);
 
                     // Create the authentication cookie
-                    HttpCookie authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
+                    var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encryptedTicket);
                     Response.Cookies.Add(authCookie);
-                    FormsAuthentication.SetAuthCookie(username, true);
 
                     return RedirectToAction("Index", "ToDo");
                 }

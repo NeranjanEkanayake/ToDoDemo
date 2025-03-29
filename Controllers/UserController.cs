@@ -18,26 +18,31 @@ namespace ToDoApp.Controllers
             _userService = userService;
         }
 
-        // GET: User/UserList/5
+ 
         public ActionResult UserList()
         {
-            // Get logged-in user username from identity
+            var currentUser = _userService.GetUserByUsername(User.Identity.Name);
+
+            if (currentUser == null || currentUser.Role != "Admin")
+            {
+                return RedirectToAction("Index", "ToDo");
+            }
+            
             var username = User.Identity.Name;
 
             if (string.IsNullOrEmpty(username))
             {
-                return RedirectToAction("Login", "AuthUser"); // If not authenticated, redirect to login
+                return RedirectToAction("Login", "AuthUser");
             }
 
-            // Fetch the user by username and get their role
             var user = _userService.GetAll().FirstOrDefault(u => u.UserName == username);
 
             if (user != null)
             {
-                ViewBag.UserRole = user.Role;  // Assuming 'Role' is your custom column in the User table
+                ViewBag.UserRole = user.Role;
             }
 
-            if (user?.Role != "Admin")  // Check if the user is not an Admin
+            if (user?.Role != "Admin")
             {
                 return RedirectToAction("Index", "ToDo");
             }
@@ -46,124 +51,152 @@ namespace ToDoApp.Controllers
             return View(users);
         }
 
-        //    if (Session["Username"] == null || Session["Username"].ToString() != "admin")
-        //    {
-        //        return RedirectToAction("Index", "ToDo");
-        //    }
-        //    var users = _userService.GetAll();
-        //    return View(users);
-        //}
-
         // GET: User/Create
         public ActionResult CreateUser(int? id)
         {
-            UserModel userModel = new UserModel();
-
             if (id.HasValue)
             {
-                userModel = _userService.GetUserById(id.Value);
+                var userModel = _userService.GetUserById(id.Value);
                 if (userModel == null)
                 {
                     TempData["ErrorMessage"] = "User not found";
-                    return RedirectToAction("CreateUser");
+                    return RedirectToAction("UserList");
                 }
+                return View(userModel);
             }
-            return View(userModel);
+            return View(new UserModel());
         }
 
         // POST: User/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateUser(UserModel userModel)
+        public ActionResult CreateUser(UserModel userModel, string password)
         {
-            if (ModelState.IsValid)
+            try
             {
-                if (userModel.Id == 0)
+                if (!ModelState.IsValid)
                 {
-                    userModel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userModel.PasswordHash);
-                    _userService.CreateUser(userModel);
+                    return View(userModel);
+                }
 
-                    TempData["SuccessMessage"] = "Created user successfully";
+                if (userModel.Id == 0) // New user
+                {
+                    var result = _userService.CreateUser(new UserModel
+                    {
+                        UserName = userModel.UserName,
+                        Name = userModel.Name,
+                        Role = "User" // Default role
+                    }, password);
+
+                    if (result.Succeeded)
+                    {
+                        TempData["SuccessMessage"] = "User created successfully!";
+                        return RedirectToAction("UserList");
+                    }
+
+                    // Add errors to ModelState
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError("", error);
+                    }
                 }
                 else
                 {
                     var existingUser = _userService.GetUserById(userModel.Id);
-
-                    if (existingUser != null)
+                    if (existingUser == null)
                     {
-                        existingUser.UserName = userModel.UserName;
-                        existingUser.Name = userModel.Name;
-
-                        if (!string.IsNullOrEmpty(userModel.PasswordHash))
-                        {
-                            existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userModel.PasswordHash);
-                        }
-                        _userService.UpdateUser(existingUser);
-                        TempData["SuccessMessage"] = "Added user successfully";
+                        TempData["ErrorMessage"] = "User not found";
+                        return RedirectToAction("UserList");
                     }
 
-                }
-                return RedirectToAction("Index", "ToDo");
-            }
+                    existingUser.UserName = userModel.UserName;
+                    existingUser.Name = userModel.Name;
+                    if (!string.IsNullOrEmpty(password))
+                    {
+                        existingUser.PasswordHash = password;
+                    }
 
-            return View(userModel);
+                    var updateResult = _userService.UpdateUser(existingUser);
+                    if (updateResult.Succeeded)
+                    {
+                        TempData["SuccessMessage"] = "User updated successfully";
+                        return RedirectToAction("UserList");
+                    }
+                    return View(updateResult);
+                }
+                return View(userModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                return View(userModel);
+            }
         }
 
         // GET: User/EditUser/5
         public ActionResult EditUser(int id)
         {
-            var existingUser = _userService.GetUserById(id);
-
-            if(existingUser == null)
+            var user = _userService.GetUserById(id);
+            if (user == null)
             {
                 TempData["ErrorMessage"] = "User not found";
                 return RedirectToAction("UserList");
             }
-            return View(existingUser);
+            return View(user);
         }
 
         // POST: User/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Route("User/EditUser/{id}")]
         public ActionResult EditUser(int id, UserModel userModel)
         {
-            if (userModel == null)
+            if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Invalid User";
-
-                return RedirectToAction("Index");
-            }
-            if (ModelState.IsValid)
-            {
-                var existingUser = _userService.GetUserById(id);
-                if (existingUser == null)
-                {
-                    TempData["ErrorMessage"] = "Error getting user, unable to update";
-                    return RedirectToAction("UserList");
-                }
-
-                existingUser.UserName = userModel.UserName;
-                existingUser.Name = userModel.Name;
-                existingUser.PasswordHash = userModel.PasswordHash;
-
-                _userService.UpdateUser(existingUser);
-                TempData["SuccessMessage"] = "Updated user successfully";
+                TempData["ErrorMessage"] = "Invalid User Data";
                 return RedirectToAction("UserList");
             }
-            TempData["ErrorMessage"] = "Data table unavailable";
+
+            var existingUser = _userService.GetUserById(id);
+            if (existingUser == null)
+            {
+                TempData["ErrorMessage"] = "User not found";
+                return RedirectToAction("UserList");
+            }
+
+            existingUser.UserName = userModel.UserName;
+            existingUser.Name = userModel.Name;
+            if (!string.IsNullOrEmpty(userModel.PasswordHash))
+            {
+                existingUser.PasswordHash = userModel.PasswordHash;
+            }
+
+            var updateResult = _userService.UpdateUser(existingUser);
+            if (updateResult.Succeeded)
+            {
+                TempData["SuccessMessage"] = "User updated successfully";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to update user: " + string.Join(", ", updateResult.Errors);
+            }
+
             return RedirectToAction("UserList");
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Route("User/DeleteUser/{id}")]
         public ActionResult DeleteUser(int id)
         {
-            _userService.DeleteUser(id);
-            TempData["SuccessMessage"] = "User Deleted successfully";
-            return RedirectToAction(nameof(UserList));
+            var result = _userService.DeleteUser(id);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "User deleted successfully";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to delete user: " + string.Join(", ", result.Errors);
+            }
+            return RedirectToAction("UserList");
         }
     }
 }
