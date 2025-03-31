@@ -6,19 +6,21 @@ using System.Web;
 using System.Web.Mvc;
 using ToDoApp.Models;
 using ToDoApp.Services;
+using Microsoft.AspNet.Identity;
 
 namespace ToDoApp.Controllers
 {
     [Authorize]
     public class UserController : Controller
     {
+
         private readonly UserService _userService;
         public UserController(UserService userService)
         {
+            
             _userService = userService;
         }
-
- 
+         
         public ActionResult UserList()
         {
             var currentUser = _userService.GetUserByUsername(User.Identity.Name);
@@ -50,7 +52,8 @@ namespace ToDoApp.Controllers
             var users = _userService.GetAll();
             return View(users);
         }
-
+        
+        
         // GET: User/Create
         public ActionResult CreateUser(int? id)
         {
@@ -70,7 +73,7 @@ namespace ToDoApp.Controllers
         // POST: User/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateUser(UserModel userModel, string password)
+        public ActionResult CreateUpdateUser(UserModel userModel, string password)
         {
             try
             {
@@ -109,14 +112,11 @@ namespace ToDoApp.Controllers
                         return RedirectToAction("UserList");
                     }
 
-                    existingUser.UserName = userModel.UserName;
-                    existingUser.Name = userModel.Name;
-                    if (!string.IsNullOrEmpty(password))
-                    {
-                        existingUser.PasswordHash = password;
-                    }
+                    //existingUser.UserName = userModel.UserName;
+                    //existingUser.Name = userModel.Name;
 
-                    var updateResult = _userService.UpdateUser(existingUser);
+                    
+                    var updateResult = _userService.UpdateUser(userModel,password);
                     if (updateResult.Succeeded)
                     {
                         TempData["SuccessMessage"] = "User updated successfully";
@@ -131,57 +131,7 @@ namespace ToDoApp.Controllers
                 TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
                 return View(userModel);
             }
-        }
-
-        // GET: User/EditUser/5
-        public ActionResult EditUser(int id)
-        {
-            var user = _userService.GetUserById(id);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "User not found";
-                return RedirectToAction("UserList");
-            }
-            return View(user);
-        }
-
-        // POST: User/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult EditUser(int id, UserModel userModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                TempData["ErrorMessage"] = "Invalid User Data";
-                return RedirectToAction("UserList");
-            }
-
-            var existingUser = _userService.GetUserById(id);
-            if (existingUser == null)
-            {
-                TempData["ErrorMessage"] = "User not found";
-                return RedirectToAction("UserList");
-            }
-
-            existingUser.UserName = userModel.UserName;
-            existingUser.Name = userModel.Name;
-            if (!string.IsNullOrEmpty(userModel.PasswordHash))
-            {
-                existingUser.PasswordHash = userModel.PasswordHash;
-            }
-
-            var updateResult = _userService.UpdateUser(existingUser);
-            if (updateResult.Succeeded)
-            {
-                TempData["SuccessMessage"] = "User updated successfully";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Failed to update user: " + string.Join(", ", updateResult.Errors);
-            }
-
-            return RedirectToAction("UserList");
-        }
+        }       
 
         [HttpPost]
         [ValidateAntiForgeryToken]

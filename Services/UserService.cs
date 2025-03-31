@@ -1,5 +1,6 @@
 ﻿using BCrypt.Net;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,14 @@ namespace ToDoApp.Services
     {
         private readonly UserManager<UserModel, int> _userManager;
         private readonly ApplicationDbContext _context;
-        public UserService(UserManager<UserModel, int> userManager, ApplicationDbContext context)
+        private readonly PasswordHasher<UserModel> _passwordHasher;
+        public UserService(
+            UserManager<UserModel, int> userManager,
+            PasswordHasher<UserModel> passwordHasher,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
+            _passwordHasher = passwordHasher;
             _context = context;
         }
 
@@ -47,31 +53,24 @@ namespace ToDoApp.Services
            return _userManager.CheckPassword(user, password);
         }
 
-        
-        //public UserModel GetUserByName(string name)
-        //{
-        //    return _context.Users.FirstOrDefault(n => n.Name);
-        //}
-
-        public IdentityResult CreateUser(UserModel user, string password)
+        public Microsoft.AspNet.Identity.IdentityResult CreateUser(UserModel user, string password)
         {
             try
             {
                 // Verify the user object
                 if (user == null)
                 {
-                    return IdentityResult.Failed("User object is null");
+                    return Microsoft.AspNet.Identity.IdentityResult.Failed("User object is null");
                 }
 
                 // Verify password
                 if (string.IsNullOrWhiteSpace(password))
                 {
-                    return IdentityResult.Failed("Password cannot be empty");
+                    return Microsoft.AspNet.Identity.IdentityResult.Failed("Password cannot be empty");
                 }
 
-                // Hash the password before saving
-                var hasher = new PasswordHasher();
-                user.PasswordHash = hasher.HashPassword(password);
+                // Hash the password before saving               
+                user.PasswordHash = _passwordHasher.HashPassword(user, password);
 
                 // Add to context
                 _context.Users.Add(user);
@@ -82,50 +81,51 @@ namespace ToDoApp.Services
                 // Verify save
                 if (changes > 0)
                 {
-                    return IdentityResult.Success;
+                    return Microsoft.AspNet.Identity.IdentityResult.Success;
                 }
-                return IdentityResult.Failed("No changes saved to database");
+                return Microsoft.AspNet.Identity.IdentityResult.Failed("No changes saved to database");
             }
             catch (Exception ex)
             {
                 // Log the full error
                 System.Diagnostics.Debug.WriteLine($"User creation failed: {ex}");
-                return IdentityResult.Failed($"Error: {ex.Message}");
+                return Microsoft.AspNet.Identity.IdentityResult.Failed($"Error: {ex.Message}");
             }
         }
 
-        public IdentityResult UpdateUser(UserModel user)
+        public Microsoft.AspNet.Identity.IdentityResult UpdateUser(UserModel user, string password)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            var existingUser = _context.Users.FirstOrDefault(u => u.Id == user.Id);
 
-            var existingUser = _userManager.FindById(user.Id);
-            if (existingUser != null)
-            {
-                existingUser.UserName = user.UserName;
-                existingUser.Name = user.Name;
-                existingUser.Role = user.Role;
+            existingUser.UserName = user.UserName;
+            existingUser.Name = user.Name;
+            existingUser.Role = user.Role;
 
-                if (!string.IsNullOrEmpty(user.PasswordHash))
-                {
-                    _userManager.RemovePassword(existingUser.Id);
-                    _userManager.AddPassword(existingUser.Id, user.PasswordHash);
-                }
-                return _userManager.Update(existingUser);
+            if (!string.IsNullOrWhiteSpace(password))
+            {
+                //var hasher = new PasswordHasher();
+                //existingUser.PasswordHash = hasher.HashPassword(password);
+                existingUser.PasswordHash = _passwordHasher.HashPassword(existingUser, password);
             }
-            return IdentityResult.Failed("User not found");
+            try
+            {
+                _context.SaveChanges(); // Commit changes to the database
+                return Microsoft.AspNet.Identity.IdentityResult.Success;
+            }
+            catch (Exception ex)
+            {
+                return Microsoft.AspNet.Identity.IdentityResult.Failed($"Error updating user: {ex.Message}");
+            }
         }
 
-        public IdentityResult DeleteUser(int id)
+        public Microsoft.AspNet.Identity.IdentityResult DeleteUser(int id)
         {
             var user = _userManager.FindById(id);
             if (user != null)
             {
                 return _userManager.Delete(user);
             }
-            return IdentityResult.Failed("User not found.");
+            return Microsoft.AspNet.Identity.IdentityResult.Failed("User not found.");
         }
     }
 }

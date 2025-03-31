@@ -13,7 +13,7 @@
 
                             <h2 class="text-uppercase text-center mb-5">@((Model.Id==0)?"Create an account":"Edit user")</h2>
 
-                            @using (Html.BeginForm("CreateUser", "User", FormMethod.Post))
+                            @using (Html.BeginForm("CreateUpdateUser", "User", FormMethod.Post))
                             {
                                 @Html.AntiForgeryToken()
 
@@ -30,10 +30,11 @@
                                 <div data-mdb-input-init class="form-outline mb-4">
                                     @Html.TextBox("username", null, new { @class = "form-control", required = "required" })
                                     <label class="form-label" for="form3Example3cg">Username</label>
-                                </div>                                
+                                </div>
 
                                 <div data-mdb-input-init class="form-outline mb-4">
-                                    @Html.Password("password", null, new { @class = "form-control", required = Model.Id == 0 ? "required" : null })
+                                    @Html.Password("password", "", new { @class = "form-control", placeholder = "Leave blank to keep current password" })
+
                                     <label class="form-label" for="form3Example4cg">Password</label>
                                 </div>
 
